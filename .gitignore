@@ -29,6 +29,7 @@ laravel/bootstrap/cache/*.php
 # ========================================
 # Python関連
 # ========================================
+.env
 python/__pycache__/
 python/*.pyc
 
