@@ -25,8 +25,10 @@ export default function RegisterPage() {
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [role, setRole] = useState<UserRole>('jobseeker');
-    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+    const [generalError, setGeneralError] = useState<string | null>(null);
+    
 
 
     // ── フック（Hook）の準備 ──────────────────────────
@@ -37,22 +39,21 @@ export default function RegisterPage() {
     // ── フォーム送信の処理 ──────────────────────────
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (password !== passwordConfirm) {
-            setError('パスワードが一致しません');
-            return;
-        }
-
-        setError(null);
+        setFieldErrors({}); // 魔法をかける前に古いエラーを消す
+        setGeneralError(null);
         setLoading(true);
 
         try {
-            await register( name,email, password, role );
-        } catch (err: unknown) {
-            const message =
-                err instanceof Error ? err.message : '登録に失敗しました';
-            setError(message);
+            await register(name, email, password, role);
+        } catch (err: any) {
+            // Laravelのバリデーションエラー(422)が返ってきた場合
+            if (err.response?.status === 422) {
+                setFieldErrors(err.response.data.errors);
+            } else {
+                setGeneralError(err.response?.data?.message || '登録に失敗しました');
+            }
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
 
@@ -76,12 +77,12 @@ export default function RegisterPage() {
                 {/* カード */}
                 <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-8'>
 
-                    {/* エラー表示エリア */}
-                    {error && (
-                        <div className='mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm'>
-                            {error}
-                        </div>
-                    )}
+                   {/* 1. 全体エラー（サーバーダウンなど）を表示 */}
+                        {generalError && (
+                            <div className='mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm'>
+                                {generalError}
+                            </div>
+                        )}
 
                     {/* フォーム */}
                     <form onSubmit={handleSubmit} className='space-y-5'>
@@ -95,7 +96,11 @@ export default function RegisterPage() {
                                 onChange={(e) => setName(e.target.value)}
                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#534AB7] focus:border-transparent text-gray-800"
                                 placeholder="山田 太郎"
-                            />
+                                />
+                                
+                            {fieldErrors.name && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.name[0]}</p>
+                            )}
                         </div>
 
                         {/* メールアドレス欄 */}
@@ -109,7 +114,10 @@ export default function RegisterPage() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 className='w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#534AB7] focus:border-transparent text-gray-800'
                                 placeholder='you@example.com'
-                            />
+                                />
+                                {fieldErrors.email && (
+                                    <p className="mt-1 text-xs text-red-600">{fieldErrors.email[0]}</p>
+                                )}
                         </div>
 
 
@@ -122,7 +130,10 @@ export default function RegisterPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className='w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#534AB7] focus:border-transparent text-gray-800'
                                 placeholder='●●●●●●●●'
-                            />
+                                />
+                                {fieldErrors.password && (
+                                    <p className="mt-1 text-xs text-red-600">{fieldErrors.password[0]}</p>
+                                )}
                         </div>
                         {/* パスワード確認欄 */}
                         <div>

@@ -9,6 +9,8 @@ import { companyApi } from '@/lib/api';
 import { Mail, MapPin, JapaneseYen, BookOpen, ArrowLeft } from "lucide-react";
 import { Profile, UserDetail, Applicant } from '@/types';
 import Link from "next/link";
+import { Bot, RefreshCw } from "lucide-react";
+
 
 
 
@@ -19,6 +21,7 @@ export default function ApplicantDetailPage() {
     const { id } = useParams();  //URLに入っているidを取り出す
     const [applicant, setApplicant] = useState<Applicant | null>(null);  //応募者データを保存する箱
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
 
     //特定の応募者１りの情報を取得するAPIを叩く
     useEffect(() => {
@@ -34,6 +37,21 @@ export default function ApplicantDetailPage() {
         };
         fetchDetail();
     }, [id]);
+
+
+    //AI診断を実行する関数
+    const handleAnalyze = async () => {
+        setLoading(true);
+        try {
+            const res = await companyApi.analyzeApplicant(Number(id));
+            setApplicant(prev => prev ? { ...prev, company_ai_comment: res.data.comment } : null);
+        } catch (e) {
+            alert("分析に失敗しました");
+        } finally {
+            setLoading(false);
+        }
+
+    };
 
     if (!applicant) return <div className="p-10 text-center">読み込み中...</div>
     
@@ -84,6 +102,35 @@ export default function ApplicantDetailPage() {
                     </div>
                 </div>
             </div>
+            {/*  --- JSX（表示部分）への追加 --- */}
+            <section className="p-8 border-t border-gray-100">
+                <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
+                    <Bot className="text-[#534AB7]" /> 企業向けAI診断
+                </h2>
+
+                {applicant.company_ai_comment ? (
+                    <div className="bg-[#F5F3FF] p-6 rounded-2xl border border-[#DDD6FE]">
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                            {applicant.company_ai_comment}
+                        </p>
+                    </div>
+                ) : (
+                        <div className="text-center bg-gray-50 p-10 rounded-3xl border-2 border-dashed border-gray-200">
+                            <p className="text-gray-500 mb-4">この応募者のスキルと自社求人のマッチ度をプロ視点で分析します</p>
+                            <button
+                                onClick={handleAnalyze}
+                                disabled={loading}
+                                className="w-full py-4 rounded-full font-bold text-white flex items-center justify-center gap-2.5 transition-transform active:scale-95 disabled:opacity-50 shadow-md"
+                                style={{ background: 'linear-gradient(to right, #7C3AED, #EC4899, #EF4444)' }}
+                            >
+                                {loading ? <RefreshCw className="animate-spin" size={24} /> : <Bot size={24} />}
+                                <span>{loading ? 'AIが応募者を分析中...' : 'AI分析レポートを生成する'}</span>
+                            </button>
+                        </div>
+                )}
+                
+            </section>
+            
 
             <div className="mt-8 flex justify-end">
                 <button

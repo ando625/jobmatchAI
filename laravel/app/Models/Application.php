@@ -12,7 +12,7 @@ class Application extends Model
         'status',
         'match_score',
         'match_reason',
-
+        'company_ai_comment'
     ];
 
     protected $casts = [

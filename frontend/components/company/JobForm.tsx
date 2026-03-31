@@ -179,16 +179,22 @@ export default function JobForm({ job }: Props) {
             </div>
 
             {/* 必須スキル（TagInputコンポーネントを使う！） */}
-            <TagInput
-                label="必須スキル"
-                value={form.required_skills}
-                onChange={(tags) => setForm(prev => ({ ...prev, required_skills: tags }))}
-                // TagInput が「タグが変わったよ」と教えてきたら form を更新
-                placeholder="例：React（Enterで追加）"
-            />
+            <div>
+                <TagInput
+                    label="スキル"
+                    value={form.required_skills}
+                    onChange={(tags) => setForm(prev => ({ ...prev, required_skills: tags }))}
+                    // TagInput が「タグが変わったよ」と教えてきたら form を更新
+                    placeholder="例：React（Enterで追加）"
+                />
+                {errors.required_skills && (
+                    <p className='text-red-500 text-xs'>{errors.required_skills}</p>
+                )}
+            </div>
+
 
             {/* 給与範囲 */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-2 gap-4 mt-4 mb-4">
                 {/* grid grid-cols-2 = 2列並べる */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -223,7 +229,7 @@ export default function JobForm({ job }: Props) {
             {/* 勤務地 */}
             <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    勤務地 <span className="text-red-500">*</span>
+                    勤務地 
                 </label>
                 <input
                     type="text"
@@ -231,6 +237,7 @@ export default function JobForm({ job }: Props) {
                     value={form.location}
                     onChange={handleChange}
                     placeholder="例：東京・フルリモート可"
+                    autoComplete="off"
                     className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#1D9E75]"
                 />
             </div>

@@ -10,6 +10,7 @@ use App\Models\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Http\Requests\JobPostingRequest;
+use App\Http\Requests\StoreCompanyRequest;
 
 class JobController extends Controller
 {
@@ -25,8 +26,7 @@ class JobController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search){
                 $q->where('title', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")
-                ->orWhere('company_name', 'like', "%{$search}%");
+                ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -319,5 +319,26 @@ class JobController extends Controller
             'success' => true,
             'data' => $applicant,
         ]);
+    }
+
+    /**
+     * 会社情報を新しく登録する
+     */
+    public function storeCompany(StoreCompanyRequest $request)
+    {
+        $validated = $request->validated();
+
+        $company = Company::create([
+            'user_id' => Auth::id(),
+            'company_name' => $validated['company_name'],
+            'location' => $validated['location'],
+            'description' => $validated['description'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $company,
+        ]);
+
     }
 }

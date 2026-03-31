@@ -111,6 +111,14 @@ export const companyApi = {
 
     getApplicantDetail: (id: number) =>
         apiClient.get(`/company/applicants/${id}`),
+
+    //応募IDを指定して企業用AI診断を実行
+    analyzeApplicant: (applicationId: number) =>
+        apiClient.post<{ comment: string }>(`/company/applications/${applicationId}/ai-analysis`),
+    
+    //会社プロフィールを新規作成する
+    createProfile: (data: { company_name: string; location?: string; description?: string }) =>
+        apiClient.post('/company/profile', data),
 };
 
 

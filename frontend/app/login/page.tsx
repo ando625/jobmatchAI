@@ -20,8 +20,10 @@ export default function LoginPage() {
     // ── 状態（State）の定義 ──────────────────────────
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+    const [generalError, setGeneralError] = useState<string | null>(null);
+    
 
 
     // ── フック（Hook）の準備 ──────────────────────────
@@ -32,15 +34,19 @@ export default function LoginPage() {
     // ── フォーム送信の処理 ──────────────────────────
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
+        setFieldErrors({}); // 前のエラーをクリア
+        setGeneralError(null);
         setLoading(true);
 
         try {
             await login(email, password);
-        } catch (err: unknown) {
-            const error = err as any; // 一旦 any として扱う
-            const message =
-                error.response?.data?.message || "ログインに失敗しました";
+        } catch (err: any) {
+            // Laravelのバリデーションエラー（422）の場合
+            if (err.response?.status === 422) {
+                setFieldErrors(err.response.data.errors);
+            } else {
+                setGeneralError(err.response?.data?.message || "ログインに失敗しました");
+            }
         } finally {
             setLoading(false)
         }
@@ -64,12 +70,12 @@ export default function LoginPage() {
                 {/* カード */}
                 <div className='bg-white rounded-xl shadow-sm border border-gray-200 p-8'>
 
-                    {/* エラー表示エリア */}
-                    {error && (
-                        <div className='mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm'>
-                            {error}
-                        </div>
-                    )}
+                        {/* 1. 全体エラー（サーバーダウンなど）を表示 */}
+                        {generalError && (
+                            <div className='mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm'>
+                                {generalError}
+                            </div>
+                        )}
 
                     {/* フォーム */}
                     <form onSubmit={handleSubmit} className='space-y-5'>
@@ -85,7 +91,10 @@ export default function LoginPage() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 className='w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#534AB7] focus:border-transparent text-gray-800'
                                 placeholder='you@example.com'
-                            />
+                                />
+                            {fieldErrors.email && (
+                                    <p className="mt-1 text-xs text-red-600">{fieldErrors.email[0]}</p>
+                                )}
                         </div>
 
 
@@ -98,7 +107,11 @@ export default function LoginPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className='w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#534AB7] focus:border-transparent text-gray-800'
                                 placeholder='●●●●●●●●'
-                            />
+                                />
+                                
+                                {fieldErrors.password && (
+                                    <p className="mt-1 text-xs text-red-600">{fieldErrors.password[0]}</p>
+                                )}
                         </div>
 
                         {/* ログインボタン */}

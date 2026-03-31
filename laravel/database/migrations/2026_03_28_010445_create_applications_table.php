@@ -19,6 +19,7 @@ return new class extends Migration
             //⬆️ 選考ステータス　　--応募中/書類選考/面接/内定/不採用--
             $table->integer('match_score')->nullable();
             $table->text('match_reason')->nullable();
+            $table->text('company_ai_comment')->nullable();
             $table->timestamps();
         });
     }

@@ -7,23 +7,10 @@
 //   ↑ '@/types' だけで全部の型が取れる
 
 export type { User, AuthContextType, AuthResponse, ApiError } from './auth';
-export type { Job, Feature, JobWithCount, AdminStats, Applicant, JobWithApplicants } from './jop';
+export type { Job, Feature, JobWithCount, AdminStats, Applicant, JobWithApplicants } from './job';
 
-// ============================================
-// 応募データの型
-// ============================================
-export interface Application {
-    id: number;
-    job_posting_id: number;
-    user_id: number;
-    status: 'applying' | 'screening' | 'interview' | 'offered' | 'rejected';
-    //        ↑ 'applied' → 'applying' に修正！DBのENUMと一致させる
-    match_score: number | null;
-    match_reason: string | null;
-    created_at: string;
-    job_posting: Job;
-    // ↑ JobPosting という未定義の型ではなく、job.ts にある Job 型を使う
-}
+
+
 
 // ============================================
 // 診断結果データの型
@@ -60,14 +47,3 @@ export interface UserDetail {
     profile?: Profile; // profilesテーブルと1対1（無い場合もあるので ? をつける）
 }
 
-// 3. 応募（Application）テーブルの型
-export interface Applicant {
-    id: number;
-    job_posting_id: number;
-    user_id: number;
-    status: 'applying' | 'screening' | 'interview' | 'offered' | 'rejected';
-    match_score: number | null;
-    match_reason: string | null;
-    created_at: string;
-    user: UserDetail; // リレーションで取得するユーザー情報
-}

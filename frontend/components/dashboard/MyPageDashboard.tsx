@@ -13,7 +13,7 @@ type TabKey = 'applications' | 'previews' | 'jobs' | 'profile';
 
 // ===== 変換テーブルを追加 =====
 const STATUS_LABEL: Record<string, string> = {
-    'applying':  '応募中',
+    'applying':  '応募済み',
     'screening': '書類選考',
     'interview': '面接',
     'offered':   '内定',
@@ -69,17 +69,12 @@ function ApplicationCard({
         <div className="bg-white border border-gray-200 rounded-xl p-4 mb-3 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start gap-3">
 
-                {/* スコアバッジ */}
-                <div className={`min-w-[48px] h-[48px] rounded-full flex items-center justify-center text-[15px] font-medium shrink-0 ${getScoreBg(score)}`}>
-                    {score !== null ? score : '—'}
-                </div>
-
                 {/* 右側テキスト */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span className="text-sm font-bold text-gray-800">{title}</span>
                         {status && (
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_STYLE[status] ?? 'bg-gray-100 text-gray-600'}`}>
+                            <span className={`text-[12px] font-bold px-3 py-1 tracking-wider rounded-full ${STATUS_STYLE[status] ?? 'bg-gray-100 text-gray-600'}`}>
                                 {STATUS_LABEL[status] ?? status}
                             </span>
                         )}
@@ -133,35 +128,30 @@ export default function MyPageDashboard() {
     const [loadingPreviews, setLoadingPreviews] = useState(false);
 
     useEffect(() => {
-        const fetch = async () => {
+        const fetchAllData = async () => {
             setLoadingApps(true);
+            setLoadingPreviews(true);
             try {
-                const res = await myPageApi.getApplications();
-                setApplications(res.data.applications ?? []);
-            } catch (e) { console.error(e); }
-            finally { setLoadingApps(false); }
+                const [appRes, previewRes] = await Promise.all([
+                    myPageApi.getApplications(),
+                    myPageApi.getMatchPreviews()
+                ]);
+                setApplications(appRes.data.applications ?? []);
+                setPreviews(previewRes.data.previews ?? []);
+            } catch (e) { console.error('データの取得に失敗しました',e); }
+            finally {
+                setLoadingApps(false);
+                setLoadingPreviews(false);
+            }
         };
-        fetch();
+        fetchAllData();
     }, []);
 
 
-    // タブを開くたびに毎回取得する
-    useEffect(() => {
-        if (activeTab !== 'previews') return;
-        const fetch = async () => {
-            setLoadingPreviews(true);
-            try {
-                const res = await myPageApi.getMatchPreviews();
-                setPreviews(res.data.previews ?? []);
-            } catch (e) { console.error(e); }
-            finally { setLoadingPreviews(false); }
-        };
-        fetch();
-    }, [activeTab]);
-
+   
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8 min-h-screen">
 
             {/* ヘッダー行：タイトルとボタンを両端配置 */}
             <div className="flex flex-row items-center justify-between gap-4 mb-8">
@@ -201,24 +191,26 @@ export default function MyPageDashboard() {
             </div>
 
             {/* コンテンツエリア */}
-            <div>
+            <div className="pb-20">
                 {activeTab === 'applications' && (
                     loadingApps ? <Loader /> : applications.length === 0 ? <EmptyState onAction={() => setActiveTab('jobs')} /> : (
-                        applications.map(app => (
-                            <ApplicationCard
-                                key={app.id}
-                                title={app.job_posting?.title ?? '(求人情報なし)'}
-                                companyName={app.job_posting?.company?.name}
-                                location={app.job_posting?.location}
-                                salary_min={app.job_posting?.salary_min}
-                                salary_max={app.job_posting?.salary_max}
-                                required_skills={app.job_posting?.required_skills}
-                                score={app.match_score}
-                                reason={app.match_reason}
-                                status={app.status}
-                                appliedAt={app.created_at}
-                            />
-                        ))
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {applications.map(app => (
+                                <ApplicationCard
+                                    key={app.id}
+                                    title={app.job_posting?.title ?? '(求人情報なし)'}
+                                    companyName={app.job_posting?.company?.name}
+                                    location={app.job_posting?.location}
+                                    salary_min={app.job_posting?.salary_min}
+                                    salary_max={app.job_posting?.salary_max}
+                                    required_skills={app.job_posting?.required_skills}
+                                    score={app.match_score ?? app.job_posting?.skill_score ?? null}
+                                    reason={app.match_reason}
+                                    status={app.status}
+                                    appliedAt={app.created_at}
+                                />
+                            ))}
+                        </div>
                     )
                 )}
 
@@ -233,7 +225,7 @@ export default function MyPageDashboard() {
                                 salary_min={preview.job_posting?.salary_min}
                                 salary_max={preview.job_posting?.salary_max}
                                 required_skills={preview.job_posting?.required_skills}
-                                score={preview.match_score}
+                                score={preview.match_score ?? preview.job_posting?.skill_score ?? null}
                                 reason={preview.match_reason}
                             />
                         ))

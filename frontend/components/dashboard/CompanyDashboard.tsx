@@ -44,6 +44,9 @@ export default function CompanyDashboard({ user }: Props) {
     //今どの求人の「応募者リスト」を開いているか（ID）を保存する。nullなら全部閉じている
     const [expandedJobId, setExpandedJobId] = useState<number | null>(null);
 
+    //会社プロフィールがあるかないか
+    const [hasCompany, setHasCompany] = useState<boolean>(true);
+
     // 求人一覧を読み込む（ページを開いた時）
     const fetchMyJobs = async () => {
         setIsLoading(true);
@@ -51,8 +54,13 @@ export default function CompanyDashboard({ user }: Props) {
             const res = await companyApi.getMyJobs();
             // 取得した求人に、最初は空の応募者リスト（applicants: []）をくっつけて保存
             setJobs(res.data.data.map((j: any) => ({ ...j, applicants: [] })));
-        } catch (e) {
+            setHasCompany(true);  //会社データがないと求人登録できないように
+        } catch (e: any) {
+            if (e.response?.status === 404) {
+                setHasCompany(false);
+            }
             console.error("求人取得失敗:", e);
+
         } finally {
             setIsLoading(false);
         }
@@ -61,6 +69,9 @@ export default function CompanyDashboard({ user }: Props) {
     useEffect(() => {
         fetchMyJobs();
     }, []);
+
+
+   
 
     // 【新機能】求人をクリックして応募者を表示する
     const handleExpand = async (jobId: number) => {
@@ -119,17 +130,51 @@ export default function CompanyDashboard({ user }: Props) {
     }, [jobs]);
 
 
-    
+     // 1. 読み込み中は「読み込み中...」だけ出す
+    if (isLoading) {
+        return <div className="py-20 text-center text-gray-400">読み込み中...</div>;
+    }
+
+    // 2. 読み込み終わって、会社がないなら「登録案内」を出す
+    if (!hasCompany) {
+        return (
+            <div className="max-w-2xl mx-auto m-10 text-center p-12 bg-white rounded-3xl shadow-xl border border-gray-100">
+                <div className="bg-[#E1F5EE] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Building2 size={40} className="text-[#1D9E75]" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">企業情報の登録が必要です</h2>
+                <p className="text-gray-500 mb-8 leading-relaxed">
+                    求人を投稿したり応募者を確認するには、まず貴社の基本情報を登録してください。
+                </p>
+                <Link 
+                    href="/company/setup" 
+                    className="inline-block bg-[#1D9E75] text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-[#0F6E56] transition-all"
+                >
+                    企業プロフィールを登録する
+                </Link>
+            </div>
+        );
+    }
 
 
     return (
         <div className="max-w-5xl mx-auto px-4 py-8">
             {/* 挨拶カード */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
-                <h1 className="flex items-center gap-3 text-2xl font-bold text-[#1D9E75] mb-1">
+                <div>
+                    <h1 className="flex items-center gap-3 text-2xl font-bold text-[#1D9E75] mb-1">
                     ようこそ、{user.name} さん <Building2 size={25} />
-                </h1>
-                <p className="text-gray-500 font-medium">求人の管理・応募者の確認ができます</p>
+                    </h1>
+                    <p className="text-gray-500 font-medium">求人の管理・応募者の確認ができます</p>
+                </div>
+                {/* 企業プロフィール登録・編集ボタン ★ */}
+                <Link 
+                    href="/company/setup" 
+                    className="w-[170px] mt-4 bg-white border-2 border-[#1D9E75] text-[#1D9E75] px-4 py-2 rounded-full text-sm font-bold hover:bg-[#E1F5EE] transition-colors flex items-center gap-2"
+                >
+                    <Building2 size={16} /> 企業情報の設定
+                </Link>
+
             </div>
 
             {/* 統計カードセクション */}
@@ -142,9 +187,12 @@ export default function CompanyDashboard({ user }: Props) {
             {/* 求人管理エリア */}
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6 shadow-sm">
                 <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <h2 className="font-bold text-gray-800">求人一覧（クリックで応募者を表示）</h2>
-                    <Link href="/company/jobs/new" className="bg-[#1D9E75] text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-[#0F6E56]">
-                        ＋ 新規求人を投稿
+                    <h2 className="font-bold text-gray-800 text-sm sm:text-base">
+                        求人一覧
+                        <span className="hidden sm:inline text-gray-400 font-normal ml-2">（クリックで応募者を表示）</span>
+                    </h2>
+                    <Link href="/company/jobs/new" className="bg-[#1D9E75] text-white px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-bold hover:bg-[#0F6E56]">
+                        <span>＋ 新規求人を投稿</span>
                     </Link>
                 </div>
 
@@ -212,27 +260,27 @@ export default function CompanyDashboard({ user }: Props) {
 // ── 子コンポーネント：求人の1行 ──
 function CompanyJobRow({ job, isExpanded, onToggle }: { job: JobWithCount, isExpanded: boolean, onToggle: (id: number) => void }) {
     return (
-        <div className="px-6 py-5 flex items-center gap-4">
+        <div className="px-6 py-5 flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4">
             {/* 公開/非公開バッジ */}
             <span className={`text-[10px] px-2.5 py-1 rounded-full font-black uppercase shrink-0 ${job.status === "open" ? "bg-[#E1F5EE] text-[#085041]" : "bg-gray-100 text-gray-500"}`}>
                 {job.status === "open" ? "公開中" : "非公開"}
             </span>
             <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-800 text-base">{job.title}</p>
+                <p className="font-bold text-gray-800 text-sm sm:text-base truncate">{job.title}</p>
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{job.location}</p>
             </div>
             {/* 応募者数カウンター */}
-            <div className="text-center shrink-0 px-6">
-                <span className="text-xl font-black text-[#534AB7] block leading-none">{job.applications_count}</span>
+            <div className="text-center shrink-0 px-2 sm:px-6">
+                <span className="text-base sm:text-xl font-black text-[#534AB7] block leading-none">{job.applications_count}</span>
                 <p className="text-[9px] text-gray-400 mt-1 uppercase font-black">応募</p>
             </div>
             {/* 開閉アイコン（どっちを向いているか） */}
-            <div className="text-gray-300">
+            <div className="text-gray-300 order-3 sm:order-none">
                 {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </div>
 
             {/* 操作ボタン */}
-            <div className="flex items-center gap-2 shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0 order-4 sm:order-none" onClick={(e) => e.stopPropagation()}>
                 
                 {/* 「編集」ボタン */}
                 <Link 
@@ -245,7 +293,7 @@ function CompanyJobRow({ job, isExpanded, onToggle }: { job: JobWithCount, isExp
                 {/* ステータス切替ボタン */}
                 <button 
                     onClick={() => onToggle(job.id)} 
-                    className="text-[11px] font-bold border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex-1 sm:flex-none text-[10px] font-bold border border-gray-200 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors whitespace-nowrap"
                 >
                     ステータス切替
                 </button>
@@ -257,15 +305,15 @@ function CompanyJobRow({ job, isExpanded, onToggle }: { job: JobWithCount, isExp
 // ── 子コンポーネント：応募者1人分のカード ──
 function ApplicantItem({ applicant, jobId, onStatusChange }: { applicant: Applicant, jobId: number, onStatusChange: (id: number, status: string, jobId: number) => void }) {
     return (
-        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between hover:border-[#534AB7]/30 transition-colors">
+        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#534AB7]/30 transition-colors">
             <div className="flex items-center gap-4">
                 {/* 虹色のアイコンをイメージした装飾 */}
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
                     {applicant.user.name.substring(0, 1)}
                 </div>
-                <div>
-                    <div className="flex items-center gap-2">
-                        <p className="font-bold text-gray-800 text-sm">{applicant.user.name}</p>
+                <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-bold text-gray-800 text-sm truncate">{applicant.user.name}</p>
                         {applicant.match_score && (
                             <span className="bg-[#EEEDFE] text-[#534AB7] text-[9px] font-black px-1.5 py-0.5 rounded">
                                 マッチ度 {applicant.match_score}%
@@ -279,13 +327,13 @@ function ApplicantItem({ applicant, jobId, onStatusChange }: { applicant: Applic
             </div>
 
             {/* ステータス変更セレクトボックス */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 pt-3 sm:pt-0">
                 <select
                     value={applicant.status}
                     onChange={(e) =>
                         onStatusChange(applicant.id, e.target.value, jobId)
                     }
-                    className={`text-xs px-3 py-1 rounded-full border-0 font-medium cursor-pointer ${
+                    className={`text-xs px-4 py-2 -tracking-wider rounded-full border-0 font-bold cursor-pointer sm:flex-none ${
                         STATUS_STYLE[applicant.status] ?? 'bg-gray-100 text-gray-600'
                     }`}
                 >
@@ -296,7 +344,7 @@ function ApplicantItem({ applicant, jobId, onStatusChange }: { applicant: Applic
                     <option value="offered">内定</option>
                     <option value="rejected">不採用</option>
                 </select>
-                <Link href={`/company/applicants/${applicant.id}`} className="text-[11px] font-black text-[#1D9E75] underline">
+                <Link href={`/company/applicants/${applicant.id}`} className="text-[13px] font-black text-[#1D9E75] underline">
                     詳細を見る
                 </Link>
             </div>

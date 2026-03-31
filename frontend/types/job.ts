@@ -16,6 +16,7 @@ export type Job = {
     salary_min: number | null
     salary_max: number | null
     status: 'open' | 'closed'   // open = 公開中 / closed = 非公開
+    skill_score?: number;
     created_at: string
     updated_at: string
 }
@@ -61,9 +62,12 @@ export type AdminStats = {
 
 export type Applicant = {
     id: number;
+    job_posting_id: number;
+    user_id: number;
     status: 'applying' | 'screening' | 'interview' | 'offered' | 'rejected';
     match_score: number | null;
     match_reason: string | null;
+    company_ai_comment?: string | null;
     user: {
         id: number;
         name: string;

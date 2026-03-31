@@ -11,6 +11,7 @@
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
+import { Home, LogOut, User, ChevronDown } from "lucide-react";
 
 
 export function Header() {
@@ -25,7 +26,7 @@ export function Header() {
                 {/* ロゴ */}
                 <Link
                     href="/"
-                    className="flex gap-1 text-xl font-bold text-[#534AB7] hover:opacity-80 transition-opacity"
+                    className="flex gap-1 items-center hover:opacity-80 transition-opacity"
                 >
                     <Image
                         src="/AI-icon2.png"
@@ -33,40 +34,65 @@ export function Header() {
                         width={40}
                         height={40}
                         style={{ width: '40px', height: 'auto' }}
+                        className="w-8 h-8 sm:w-10 sm:h-10"
                     />
-                    JobMatch AI
+                    <span className="text-lg sm:text-xl font-bold text-[#534AB7] truncate max-w-[120px] sm:max-w-none">
+                        JobMatch AI
+                    </span>
                 </Link>
 
-                {/* ナビゲーション */}
-                <nav>
-                    {isLoading ? null : user ? (
-                        <>
-                            <span className="text-sm text-gray-600">{user.name}</span>
+                {/* ナビゲーションエリア */}
+                <nav className="flex items-center gap-2">
+                    {isLoading ? (
+                        <div className="w-20 h-8 bg-gray-100 animate-pulse rounded-full" />
+                    ) : user ? (
+                        <div className="flex items-center gap-3">
+                            {/* ホームリンク：アイコン付き */}
                             <Link
                                 href="/dashboard"
-                                className="px-4 py-2 text-sm text-gray-600 hover:text-[#534AB7] transition-colors"
-                            >ホーム
+                                className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold text-gray-600 hover:text-[#534AB7] hover:bg-[#EEEDFE] rounded-lg transition-all"
+                            >
+                                <Home size={18} />
+                                <span className="hidden sm:inline">ホーム</span>
                             </Link>
-                            <button onClick={logout} className="px-4 py-2 text-sm text-gray-600 hover:text-red-500 transition-colors">
-                                ログアウト
+
+                            {/* 区切り線 */}
+                            <div className="w-[1px] h-4 bg-gray-200 mx-1" />
+
+                            {/* ユーザー情報：バッジ風 */}
+                            <div className="flex items-center gap-2 pl-2 pr-1 py-1 bg-gray-50 border border-gray-100 rounded-full">
+                                <div className="w-7 h-7 bg-[#534AB7] rounded-full flex items-center justify-center text-white shrink-0">
+                                    <User size={14} />
+                                </div>
+                                <span className="text-sm font-bold text-gray-700 hidden mr-1 sm:inline ">
+                                    {user.name}
+                                </span>
+                            </div>
+
+                            {/* ログアウト：ボタン風 */}
+                            <button 
+                                onClick={logout} 
+                                className="flex justify-baseline gap-1 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                            >
+                                    <LogOut size={18} />
+                                    <span className="hidden md:inline text-sm font-bold">ログアウト</span>
                             </button>
-                        </>
+                        </div>
                     ) : (
-                        //user が null ＝　未ログイン
-                        <>
+                        <div className="flex items-center gap-4">
                             <Link
                                 href="/login"
-                                className="px-4 py-2 text-sm text-gray-600 hover:text-[#534AB7] transition-colors"
+                                className="text-sm font-bold text-gray-600 hover:text-[#534AB7] transition-colors"
                             >
                                 ログイン
                             </Link>
                             <Link
                                 href="/register"
-                                className="px-5 py-2 text-sm text-white bg-[#534AB7] rounded-full hover:bg-[#3C3489] transition-colors"
+                                className="px-5 py-2.5 text-sm font-bold text-white bg-[#534AB7] rounded-full hover:bg-[#3C3489] shadow-md shadow-[#534AB7]/20 transition-all hover:-translate-y-0.5"
                             >
                                 無料で登録
                             </Link>
-                        </>
+                        </div>
                     )}
                 </nav>
             </div>

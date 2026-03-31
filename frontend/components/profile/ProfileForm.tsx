@@ -102,15 +102,6 @@ export default function ProfileForm({onSaved}: Props) {
     return (
         <form onSubmit={handleSubmit} className='max-w-4xl mx-auto space-y-6'>
 
-            {/* ===== 成功/エラーメッセージ ===== */}
-            {message && (
-                <div className={`p-4 rounded-xl text-sm ${message.includes('失敗')
-                        ? 'bg-red-50 text-red-700'
-                        : 'bg-green-50 text-green-700'
-                    }`}>
-                    {message}
-                </div>
-            )}
 
             {/* 自己紹介 */}
             <div>
@@ -126,7 +117,6 @@ export default function ProfileForm({onSaved}: Props) {
 
             {/* スキル入力 */}
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">スキル（タグで入力）</label>
                 <TagInput
                     label="スキル"
                     value={formData.skills}

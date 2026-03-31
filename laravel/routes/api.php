@@ -82,6 +82,12 @@ Route::middleware(['auth:sanctum', 'role:company,admin'])->group(function (){
 
     //応募者の１人のプロフィール取得
     Route::get('/company/applicants/{id}', [JobController::class, 'showApplicant']);
+
+    //応募IDを指定してAI診断を実行
+    Route::post('/company/applications/{application}/ai-analysis', [MatchPreviewController::class, 'analyzeForCompany']);
+
+    //企業のプロフィール会社情報を登録
+    Route::post('/company/profile', [JobController::class, 'storeCompany']);
 });
 
 
