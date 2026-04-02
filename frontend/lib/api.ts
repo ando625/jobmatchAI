@@ -4,7 +4,8 @@
 
 import apiClient from "./axios";  //axios.tsで作った設定済み通信機を取り込む
 import type { User, AuthResponse } from "@/types/auth";
-import { Job, JobsResponse, JobWithCount, AdminStats } from "@/types";
+import { Job, JobsResponse, JobWithCount, AdminStats, Applicant } from "@/types";
+import { PaginatedResponse } from "@/types/job";
 
 // ============================================================
 // 認証 API（authApi）
@@ -60,14 +61,13 @@ export const authApi = {
 // ============================================================
 // 求人 API（jobApi）
 // ============================================================
-// 今は空でOK、後で追加していく
 export const jobApi = {
-    getAll: (params?: {
+    getAll: (page: number = 1, params?: {
         search?: string;
         skill?: string;
         location?: string;
     }) =>
-        apiClient.get<JobsResponse>('/jobs', { params }),
+        apiClient.get<PaginatedResponse<Job>>('/jobs', { params: {...params,page} }),
     
     getById: (id: number) =>
         apiClient.get < { success: boolean; data:Job}>(`/jobs/${id}`),
@@ -146,4 +146,25 @@ export const myPageApi = {
 
     getMatchPreviews: () =>
         apiClient.get('/match-previews'),
+};
+
+
+// ============================================================
+// メッセージ API
+// ============================================================
+export const messageApi = {
+    getMessages: (applicationId: number) =>
+        apiClient.get(`/messages/${applicationId}`),
+
+    sendMessage: (applicantId: number, content: string) =>
+        apiClient.post('/messages', {
+            application_id: applicantId,
+            content,
+        }),
+    
+    getUnreadCount: () =>
+        apiClient.get<{ success: boolean; unread_count: number }>('/messages/unread-count'),
+
+    deleteMessage: (id: number) =>
+        apiClient.delete(`/messages/${id}`),
 };

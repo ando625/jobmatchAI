@@ -5,11 +5,14 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { companyApi } from '@/lib/api';
+import { companyApi, messageApi } from '@/lib/api';
 import { Mail, MapPin, JapaneseYen, BookOpen, ArrowLeft } from "lucide-react";
 import { Profile, UserDetail, Applicant } from '@/types';
-import Link from "next/link";
 import { Bot, RefreshCw } from "lucide-react";
+import { Message } from "@/types/message";
+import { useAuth } from "@/hooks/useAuth";
+import MessageList from "@/components/messages/MessageList";
+import MessageInput from "@/components/messages/MessageInput";
 
 
 
@@ -22,6 +25,15 @@ export default function ApplicantDetailPage() {
     const [applicant, setApplicant] = useState<Applicant | null>(null);  //応募者データを保存する箱
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const { user } = useAuth();
+
+    // メッセージ用State
+    const [messages, setMessages]     = useState<Message[]>([]);
+    const [content, setContent]       = useState('');
+    const [sending, setSending]       = useState(false);
+    const [msgLoading, setMsgLoading] = useState(true);
+
+
 
     //特定の応募者１りの情報を取得するAPIを叩く
     useEffect(() => {
@@ -39,6 +51,28 @@ export default function ApplicantDetailPage() {
     }, [id]);
 
 
+
+    //メッセージ一覧を取得
+    useEffect(() => {
+        if (!applicant?.id) return;
+
+        const fetchMessages = async () => {
+            try {
+                const res = await messageApi.getMessages(applicant.id);
+                setMessages(res.data.messages);
+            } catch (e) {
+                console.error('メッセージ取得失敗', e);
+            } finally {
+                setMsgLoading(false);
+            }
+        };
+
+        fetchMessages();
+        const timer = setInterval(fetchMessages, 10000);
+        return () => clearInterval(timer);
+    }, [applicant?.id]);
+
+
     //AI診断を実行する関数
     const handleAnalyze = async () => {
         setLoading(true);
@@ -53,7 +87,48 @@ export default function ApplicantDetailPage() {
 
     };
 
-    if (!applicant) return <div className="p-10 text-center">読み込み中...</div>
+
+    //メッセージ送信
+    const handleSend = async () => {
+        if (!content.trim() || !applicant?.id) return;
+        setSending(true);
+
+        try {
+            const res = await messageApi.sendMessage(applicant.id, content);
+            setMessages(prev => [...prev, res.data.message]);
+            setContent('');
+        } catch (e) {
+            alert('送信に失敗しました');
+        } finally {
+            setSending(false);
+        }
+    }
+
+        
+    // メッセージ削除の関数
+    const handleDelete = async (messageId: number) => {
+        if (!confirm('メッセージを削除しますか？')) return;
+
+        try {
+            await messageApi.deleteMessage(messageId);
+            // 画面上のリストからも消す
+            setMessages(prev => prev.filter(m => m.id !== messageId));
+        } catch (e) {
+            alert('削除に失敗しました');
+        }
+    };
+    
+
+
+
+
+    if (!applicant) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB]">
+                <div className="w-10 h-10 border-4 border-[#1D9E75] border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
     
     return (
         <div className="max-w-4xl mx-auto p-4 mt-14">
@@ -131,6 +206,41 @@ export default function ApplicantDetailPage() {
                 
             </section>
             
+             {/* ── メッセージセクション ── */}
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+
+                <div className="px-8 py-5 border-b border-gray-100 bg-gray-50/50">
+                    <h2 className="text-lg font-bold text-gray-800">💬 応募者へのメッセージ</h2>
+                    <p className="text-xs text-gray-400 mt-1">
+                        面接の日程調整や追加質問などをここで行えます
+                    </p>
+                </div>
+
+                {/* 共通部品 MessageList を使う */}
+                <div className="px-6 py-4 space-y-4 max-h-96 overflow-y-auto">
+                    <MessageList
+                        messages={messages}
+                        currentUserId={user?.id}
+                        onDelete={handleDelete}
+                        myBubbleColor="bg-[#1D9E75]"
+                        isLoading={msgLoading}
+                    />
+                </div>
+
+                {/* 共通部品 MessageInput を使う */}
+                <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/30">
+                    <MessageInput
+                        content={content}
+                        onChange={setContent}
+                        onSend={handleSend}
+                        sending={sending}
+                        sendButtonColor="bg-[#1D9E75]"
+                        sendButtonHoverColor="hover:bg-[#0F6E56]"
+                        focusBorderColor="focus:border-[#1D9E75]"
+                    />
+                </div>
+            </div>
+
 
             <div className="mt-8 flex justify-end">
                 <button

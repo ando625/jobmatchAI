@@ -18,6 +18,7 @@ class MatchRequest(BaseModel):
     user_skills: list[str]
     job_skills: list[str]
     user_intro: str = ""
+    job_description: str = ""
     
 
 # 企業側が応募書分析する時
@@ -26,6 +27,7 @@ class CompanyMatchRequest(BaseModel):
     job_skills: list[str]    # 例: ["PHP", "Laravel", "MySQL"]
     user_intro: str = ""
     score: int
+    job_description: str = ""
     
 
 # 3. エンドポイントを作る
@@ -36,7 +38,7 @@ async def match(req: MatchRequest):
     score = calc_jaccard_score(req.user_skills, req.job_skills)
     
     # 5. Geminiで理由文を生成する
-    reason = generate_match_reason(req.user_skills, req.job_skills, score, req.user_intro)
+    reason = generate_match_reason(req.user_skills, req.job_skills, score, req.user_intro, req.job_description, )
     
     # 6. LaravelにJSONで返す
     #    例: {"score": 67, "reason": "PHPとLaravelの経験が..."}
@@ -50,7 +52,8 @@ async def match_company(req: CompanyMatchRequest):
         req.user_skills, 
         req.job_skills, 
         req.score, 
-        req.user_intro
+        req.user_intro,
+        req.job_description, 
     )
     return {"reason": reason}
 

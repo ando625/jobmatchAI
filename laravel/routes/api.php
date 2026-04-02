@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\MatchPreviewController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\MessageController;
+
 
 Route::prefix('auth')->group(function (){
     Route::post('/register', [AuthController::class, 'register']);
@@ -50,6 +52,18 @@ Route::middleware('auth:sanctum')->group(function (){
     Route::post('/jobs/{id}/preview', [MatchPreviewController::class, 'preview']);
 
     Route::get('/match-previews', [MatchPreviewController::class, 'myPreviews']);
+
+    //メッセージ通知
+    Route::get('/messages/unread-count',[MessageController::class, 'unreadCount']);
+
+    //メッセージ一覧
+    Route::get('/messages/{applicationId}', [MessageController::class, 'index']);
+
+    //メッセージ作成
+    Route::post('/messages', [MessageController::class, 'store']);
+
+    //メッセージ削除
+    Route::delete('/messages/{id}', [MessageController::class,'destroy']);
 });
 
 
@@ -92,15 +106,7 @@ Route::middleware(['auth:sanctum', 'role:company,admin'])->group(function (){
 
 
 
-// ==========================================
-// 求職者だけ使えるルート
-// ==========================================
-// role:jobseeker = 求職者だけ通過できる
-Route::middleware(['auth:sanctum', 'role:jobseeker'])->group(function () {
 
-    
-
-});
 
 
 

@@ -11,6 +11,7 @@ import { Hand, User as UserIcon } from "lucide-react";
 import JobDetailModal from "@/components/jobs/JobDetailModal";
 import Link from "next/link";
 import apiClient from "@/lib/axios";
+import { Pagination } from "../common/Pagination";
 
 
 // スキルフィルターの選択肢（よく使うものを並べる）
@@ -40,9 +41,11 @@ export default function JobSeekerDashboard({ user }: Props) {
     const [stats, setStats] = useState({ matched: 0, applied: 0, viewed: 0 });
     // matched = マッチ件数、applied = 応募件数、viewed = 閲覧済み件数
     const [previews, setPreviews] = useState<MatchPreview[]>([]);
+    const [pagination, setPagination] = useState({ current: 1, last: 1, total:0 });
+
 
     // ユーザーが入力した条件に合わせてサーバーから求人データを取ってくる 応募件数も一緒に
-    const fetchJobs = async (searchWord: string, selectedSkill: string) => {
+    const fetchJobs = async (searchWord: string, selectedSkill: string, page:number = 1) => {
         setIsLoading(true);
 
         try {
@@ -53,22 +56,29 @@ export default function JobSeekerDashboard({ user }: Props) {
             
             //求人取得と応募件数取得を同時に実行
             const [jobsRes, appsRes, previewsRes] = await Promise.all([
-                jobApi.getAll(params),
+                jobApi.getAll(page,params),
                 apiClient.get('/applications'),
                 apiClient.get('/match-previews')
             ]);
 
-            setJobs(jobsRes.data.data.data);
+            const paginatedData = jobsRes.data;
+
+            setJobs(paginatedData.data);
             setPreviews(previewsRes.data.previews ?? []);
 
-            const appCount = appsRes.data.applications?.length ?? 0;
-            const previewCount = previewsRes.data.previews?.length ?? 0;
+            // ページ情報の更新
+            setPagination({
+                current: paginatedData.current_page,
+                last: paginatedData.last_page,
+                total: paginatedData.total
+            });
 
-            setStats(prev => ({
-                matched: previewCount,
+            const appCount = appsRes.data.applications?.length ?? 0;
+            setStats({
+                matched: previewsRes.data.previews?.length ?? 0,
                 applied: appCount,
-                viewed: jobsRes.data.data.total,
-            }));
+                viewed: paginatedData.total, // 全件数を表示
+            });
 
         } catch (e) {
             console.error(e);
@@ -76,6 +86,12 @@ export default function JobSeekerDashboard({ user }: Props) {
             setIsLoading(false);
         }
     }
+
+    //ページ変更時の関数を作成
+    const handlePageChange = (targetPage: number) => {
+        fetchJobs(search, skill, targetPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     useEffect(() => { fetchJobs('', 'すべて') }, []);
 
@@ -114,6 +130,10 @@ export default function JobSeekerDashboard({ user }: Props) {
                         </h1>
                         <p className="text-gray-500">
                             あなたにマッチした求人が見つかっています！
+                        </p>
+                        <p>
+                            自己紹介と求人詳細をしっかり書くほど、AIの分析精度が上がります。
+                            自己紹介を書いていると企業側の求人詳細と比較して「経験・志向性・人柄」まで加味した深い分析が返ってきます。
                         </p>
                     </div>
 
@@ -187,7 +207,7 @@ export default function JobSeekerDashboard({ user }: Props) {
                 </div>
             ) : (
                 <>
-                   <p className="text-sm text-gray-500 mb-3">{jobs.length}件の求人が見つかりました</p>
+                   <p className="text-sm text-gray-500 mb-3">{pagination.total}件の求人が見つかりました</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {jobs.map((job) => {
                                     //laravelから届いた「スキル適合度」
@@ -227,8 +247,20 @@ export default function JobSeekerDashboard({ user }: Props) {
                                     );
                                 })}
                             </div>
+
+                            {/* ページネーション部品を設置！ */}
+                            <div className="mt-10">
+                                <Pagination 
+                                    currentPage={pagination.current} 
+                                    lastPage={pagination.last} 
+                                    onPageChange={handlePageChange} 
+                                />
+                            </div>
                         </>
             )}
+
+
         </div>
+
     );
 }

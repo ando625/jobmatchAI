@@ -144,7 +144,9 @@ export default function CompanyDashboard({ user }: Props) {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">企業情報の登録が必要です</h2>
                 <p className="text-gray-500 mb-8 leading-relaxed">
-                    求人を投稿したり応募者を確認するには、まず貴社の基本情報を登録してください。
+                    求人を投稿したり応募者を確認するには、まず貴社の基本情報を登録してください。<br />
+                    求人詳細をしっかり書くほど、AIの分析精度が上がります。
+                    求人詳細をしっかり書き、求職者側が自己紹介をしっかり書くことで「経験・志向性・人柄」まで加味した深い分析が返ってきます。
                 </p>
                 <Link 
                     href="/company/setup" 

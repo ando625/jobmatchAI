@@ -83,3 +83,18 @@ export type JobWithApplicants = JobWithCount & {
     applicants?: Applicant[];
 };
 
+//laravelのページネーションレスポンス型
+export interface PaginatedResponse<T>{
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    prev_page_url: string | null;
+    next_page_url: string | null;
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+}
