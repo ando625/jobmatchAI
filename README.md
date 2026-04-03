@@ -14,7 +14,9 @@
 
 https://github.com/user-attachments/assets/97720bbf-ecf6-4b4c-b52f-dd1e72855175
 
-https://github.com/user-attachments/assets/df0137ea-a1cd-48e8-ac5d-64a90c36a837
+https://github.com/user-attachments/assets/198cb1c4-3323-43a9-ab68-7a4f2b6f7de4
+
+https://github.com/user-attachments/assets/11617c94-bafb-427a-9003-892b45bab235
 
 - 機能要件・基本設計・テーブル仕様書　https://docs.google.com/spreadsheets/d/1kjwwD2PU0BoBVn64UGIXupy_y2bZ6Mk8fxENfCUK6cM/edit?usp=sharing 
 
