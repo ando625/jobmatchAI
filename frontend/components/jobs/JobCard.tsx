@@ -9,7 +9,7 @@
 
 
 import type { Job } from '@/types';
-import { MapPinned } from "lucide-react";
+import { MapPinned, Building2 } from "lucide-react";
 
 
 
@@ -53,7 +53,13 @@ export function JobCard({ job, showApplyButton = false, onClick }: JobCardProps)
             <h3 className='text-base font-bold text-gray-800 leading-snug'>{job.title}</h3>
 
             {/* 会社名 */}
-            <p className="text-sm text-[#534AB7] font-medium mb-3">{job.company_name}</p>
+            <div className='flex justify-start gap-1' >
+            <Building2 size={18} className='text-gray-500 ' />
+            <p className="text-sm text-gray-400 font-medium mb-3">
+                {job.company?.company_name || job.company_name || "企業名非公開"}
+                </p>
+            </div>
+            
             
             {/* スキルタグ */}
             <div className='flex flex-wrap gap-1 mb-3'>

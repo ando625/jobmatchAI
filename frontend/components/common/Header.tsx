@@ -11,13 +11,34 @@
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
-import { Home, LogOut, User, ChevronDown } from "lucide-react";
+import { Home, LogOut, User, ChevronDown, Bell } from "lucide-react";
+import apiClient from "@/lib/axios";
+import { useEffect, useState } from "react";
+import { messageApi } from "@/lib/api";
 
 
 export function Header() {
     
     // useAuth() = AuthContext から { user, token, logout, ... } を取り出す
     const { user, logout, isLoading } = useAuth();
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    //未読数を定期的にチェック（１分ごと）
+    useEffect(() => {
+        if (!user) return;
+
+        const fetchUnread = async () => {
+            try {
+                const res = await messageApi.getUnreadCount();
+                setUnreadCount(res.data.unread_count);
+            } catch (e) {
+                console.error('未読数取得失敗', e);
+            }
+        };
+        fetchUnread();
+        const timer = setInterval(fetchUnread, 30000);
+        return () => clearInterval(timer);
+    }, [user]);
 
     return (
         <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -46,7 +67,25 @@ export function Header() {
                     {isLoading ? (
                         <div className="w-20 h-8 bg-gray-100 animate-pulse rounded-full" />
                     ) : user ? (
-                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3">
+                                {/* ベルマーク通知ボタン */}
+                            <Link
+                                href={
+                                        user.role === 'company' 
+                                            ? '/dashboard'
+                                            : 'my-page'
+                                    }
+                                className="relative p-2 text-gray-500 hover:text-[#534AB7] hover:bg-[#EEEDFE] rounded-full transition-all"
+                                title="通知"
+                            >
+                                <Bell size={20} />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+                                </Link>
+                                
                             {/* ホームリンク：アイコン付き */}
                             <Link
                                 href="/dashboard"

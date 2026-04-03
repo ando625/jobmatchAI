@@ -34,12 +34,7 @@ export type Feature = {
 
 export type JobsResponse = {
     success: boolean
-    data: {
-        data: Job[]
-        current_page: number
-        last_page: number
-        total: number
-    }
+    data: PaginatedResponse<Job>;
 }
 
 
@@ -84,7 +79,7 @@ export type JobWithApplicants = JobWithCount & {
 };
 
 //laravelのページネーションレスポンス型
-export interface PaginatedResponse<T>{
+export interface PaginatedResponse<T> {
     data: T[];
     current_page: number;
     last_page: number;
@@ -98,3 +93,4 @@ export interface PaginatedResponse<T>{
         active: boolean;
     }[];
 }
+

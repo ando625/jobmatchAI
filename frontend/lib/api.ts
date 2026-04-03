@@ -19,13 +19,15 @@ export const authApi = {
         name: string,
         email: string,
         password: string,
-        role: string
+        role: string,
+        password_confirmation: string
+
     ) => {
         return apiClient.post<AuthResponse>('/auth/register', {
             name,
             email,
             password,
-            password_confirmation: password,
+            password_confirmation,
             role,
         })
     },
@@ -67,7 +69,7 @@ export const jobApi = {
         skill?: string;
         location?: string;
     }) =>
-        apiClient.get<PaginatedResponse<Job>>('/jobs', { params: {...params,page} }),
+        apiClient.get<JobsResponse>('/jobs', { params: {...params,page} }),
     
     getById: (id: number) =>
         apiClient.get < { success: boolean; data:Job}>(`/jobs/${id}`),

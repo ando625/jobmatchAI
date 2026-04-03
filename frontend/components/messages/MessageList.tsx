@@ -68,7 +68,7 @@ export default function MessageList({
                     >
                         <div className={`max-w-[75%] flex flex-col gap-1 ${isMine ? 'items-end' : 'items-start'}`}>
 
-                            <div className="flex items-center gap-2">
+                            <div className=" items-center gap-2">
                             {/* 送り主の名前（相手のメッセージにだけ表示 */}
                             {!isMine && (
                                 <span className="text-[11px] text-gray-500 px-1">

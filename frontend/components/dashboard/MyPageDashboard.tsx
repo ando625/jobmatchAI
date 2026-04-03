@@ -48,6 +48,7 @@ function getReasonBorder(score: number | null): string {
 // 子コンポーネント: ApplicationCard
 // ============================================
 interface JobCardProps {
+    id: number;
     title: string;
     companyName?: string;
     location?: string;
@@ -61,11 +62,12 @@ interface JobCardProps {
 }
 
 function ApplicationCard({
-    title, companyName, location, salary_min, salary_max,
+    id,title, companyName, location, salary_min, salary_max,
     required_skills, score, reason, status, appliedAt
 }: JobCardProps) {
     return (
-        // style の代わりに className="bg-white border..." を使用
+        <Link href={`/messages/${id}`} className='block group'>
+        {/* style の代わりに className="bg-white border..." を使用 */}
         <div className="bg-white border border-gray-200 rounded-xl p-4 mb-3 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start gap-3">
 
@@ -77,7 +79,8 @@ function ApplicationCard({
                             <span className={`text-[12px] font-bold px-3 py-1 tracking-wider rounded-full ${STATUS_STYLE[status] ?? 'bg-gray-100 text-gray-600'}`}>
                                 {STATUS_LABEL[status] ?? status}
                             </span>
-                        )}
+                            )}
+                            
                     </div>
 
                     <div className="text-[12px] text-gray-500 mb-2">
@@ -110,10 +113,15 @@ function ApplicationCard({
                         <div className="text-[10px] text-gray-400 mt-2">
                             応募日: {new Date(appliedAt).toLocaleDateString('ja-JP')}
                         </div>
-                    )}
+                        )}
+                   <span className="flex justify-end text-[12px] text-[#534AB7] font-bold  group-hover:opacity-100 ">
+                                メッセージを送る ✉️
+                            </span>
                 </div>
+                </div>
+                
             </div>
-        </div>
+        </Link>
     );
 }
 
@@ -198,6 +206,7 @@ export default function MyPageDashboard() {
                             {applications.map(app => (
                                 <ApplicationCard
                                     key={app.id}
+                                    id={app.id}
                                     title={app.job_posting?.title ?? '(求人情報なし)'}
                                     companyName={app.job_posting?.company?.name}
                                     location={app.job_posting?.location}
@@ -219,6 +228,7 @@ export default function MyPageDashboard() {
                         previews.map(preview => (
                             <ApplicationCard
                                 key={preview.id}
+                                id={preview.id}
                                 title={preview.job_posting?.title ?? '(求人情報なし)'}
                                 companyName={preview.job_posting?.company?.name}
                                 location={preview.job_posting?.location}

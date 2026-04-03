@@ -23,7 +23,7 @@ export type AuthContextType = {
     token: string | null     //Sanctumのアクセストークン
     isLoading: boolean       //認証状態を確認中か？
     login: (email: string, password: string) => Promise<void>
-    register: (name: string, email: string, password: string, role: string) => Promise<void>
+    register: (name: string, email: string, password: string, role: string,passwordConfirm: string) => Promise<void>
     logout: ()=>Promise<void>
 
 }

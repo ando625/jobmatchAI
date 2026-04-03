@@ -105,8 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: string,
         password: string,
         role: string,
+        passwordConfirm: string,
     ): Promise<void> => {
-        const response = await authApi.register(name, email, password, role);
+        const response = await authApi.register(name, email, password, role, passwordConfirm);
         const resData = response.data; // 修正：一度変数に受ける
 
         // ── 修正ポイント：Laravelの実際の形（access_token）に合わせる ──

@@ -42,27 +42,53 @@ class JobController extends Controller
             $query->where('location', 'like', "%{$request->location}%");
         }
 
-        // データの取得
-        $jobs = $query->orderBy('created_at', 'desc')
-            ->paginate(10);
+        // 全てのデータの取得
+        $allJobs = $query->with('company')->get();
 
-
-        //ログイン中のユーザーのスキルを取得してスコアを計算
+        // ユーザーとそのスキルを取得
         $user = Auth::user();
-        //プロフィールにスキルを登録してる想定
-        $userSkills = $user && $user->profile ? ($user->profile->skills ?? []) : [];
+        $userSkills = $user && $user->profile ? ($user->profile->skills ?? []): [];
 
-
-        //各く求人データを作り替える
-        $jobs->getCollection()->transform(function ($job) use ($userSkills){
+        // 各求人にスコアを計算して持たせる
+        // calculateScore メソッドを使って、0〜100 の数値を job->skill_score に入れます
+        $allJobs->transform(function ($job) use ($userSkills) {
             $job->skill_score = $this->calculateScore($userSkills, $job->required_skills ?? []);
             return $job;
         });
 
+        //スコアが高い順に並び替える
+        // （第1優先：スコア、第2優先：日付 にする）
+        $sortedJobs = $allJobs->sort(function ($a, $b) {
+            // 1. まずはスキルスコアで比較（大きい方が上）
+            if ($a->skill_score !== $b->skill_score) {
+                return $b->skill_score <=> $a->skill_score;
+            }
+            // 2. スコアが同じなら、作成日で比較（新しい方が上）
+            return $b->created_at <=> $a->created_at;
+        })->values();
+
+        //並び変えたあとページネーションする
+        $perPage = 10;
+        $currentPage = (int)$request->input('page', 1); // 今何ページ目か
+
+        // 現在のページに表示する分だけ切り取る
+        $currentItems = $sortedJobs->forPage($currentPage, $perPage)->values();
+
+        // 手動でページネーションオブジェクトを作成（Laravelの標準形式に合わせる）
+        $pagedData = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems,
+            $sortedJobs->count(), // 全件数
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return response()->json([
             'success' => true,
-            'data' => $jobs,
+            'data' => $pagedData,
         ]);
+
+
 
 
     }

@@ -153,8 +153,7 @@ export default function HomePage() {
                 <section className="py-16 px-4">
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center mb-10">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">注目の求人</h2>
-                            <p className="text-gray-500 text-sm">AIが選んだ注目求人をピックアップ</p>
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">求人例</h2>
                         </div>
                         
                         {/* JobList 部品に仮データを渡す */}
@@ -164,7 +163,7 @@ export default function HomePage() {
                                 href="/register"
                                 className="inline-block px-8 py-3 text-sm font-medium text-[#534AB7] border border-[#534AB7] rounded-full hover:bg-[#534AB7] hover:text-white transition-colors"
                             >
-                                すべての求人を見る（無料登録が必要）
+                                実際の求人を見てみる（無料登録が必要）
                             </Link>
                         </div>
                     </div>

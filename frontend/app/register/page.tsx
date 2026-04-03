@@ -43,8 +43,18 @@ export default function RegisterPage() {
         setGeneralError(null);
         setLoading(true);
 
+        // 送信する前にフロント側でチェックする
+        if (password !== passwordConfirm) {
+            setFieldErrors({ password: ['パスワードが一致しません'] });
+            setLoading(false);
+            return;
+        }
+
+        
+        
+
         try {
-            await register(name, email, password, role);
+            await register(name, email, password, role, passwordConfirm);
         } catch (err: any) {
             // Laravelのバリデーションエラー(422)が返ってきた場合
             if (err.response?.status === 422) {

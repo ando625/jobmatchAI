@@ -45,47 +45,48 @@ export default function JobSeekerDashboard({ user }: Props) {
 
 
     // ユーザーが入力した条件に合わせてサーバーから求人データを取ってくる 応募件数も一緒に
-    const fetchJobs = async (searchWord: string, selectedSkill: string, page:number = 1) => {
+    const fetchJobs = async (searchWord: string, selectedSkill: string, page: number = 1) => {
         setIsLoading(true);
-
         try {
             const params: { search?: string; skill?: string } = {};
-
             if (searchWord) params.search = searchWord;
             if (selectedSkill !== 'すべて') params.skill = selectedSkill;
             
-            //求人取得と応募件数取得を同時に実行
             const [jobsRes, appsRes, previewsRes] = await Promise.all([
-                jobApi.getAll(page,params),
+                jobApi.getAll(page, params),
                 apiClient.get('/applications'),
                 apiClient.get('/match-previews')
             ]);
 
-            const paginatedData = jobsRes.data;
+            const paginationResult = jobsRes.data.data;
 
-            setJobs(paginatedData.data);
+            if (paginationResult) {
+                setJobs(paginationResult.data || []);
+                setPagination({
+                    current: paginationResult.current_page,
+                    last: paginationResult.last_page,
+                    total: paginationResult.total
+                });
+
+                const appCount = appsRes.data.applications?.length ?? 0;
+                setStats({
+                    matched: previewsRes.data.previews?.length ?? 0,
+                    applied: appCount,
+                    viewed: paginationResult.total,
+                });
+            }
+
             setPreviews(previewsRes.data.previews ?? []);
 
-            // ページ情報の更新
-            setPagination({
-                current: paginatedData.current_page,
-                last: paginatedData.last_page,
-                total: paginatedData.total
-            });
-
-            const appCount = appsRes.data.applications?.length ?? 0;
-            setStats({
-                matched: previewsRes.data.previews?.length ?? 0,
-                applied: appCount,
-                viewed: paginatedData.total, // 全件数を表示
-            });
-
         } catch (e) {
-            console.error(e);
+            console.error("データ取得エラー:", e);
+            setJobs([]);
         } finally {
             setIsLoading(false);
         }
     }
+
+
 
     //ページ変更時の関数を作成
     const handlePageChange = (targetPage: number) => {
@@ -131,9 +132,9 @@ export default function JobSeekerDashboard({ user }: Props) {
                         <p className="text-gray-500">
                             あなたにマッチした求人が見つかっています！
                         </p>
-                        <p>
-                            自己紹介と求人詳細をしっかり書くほど、AIの分析精度が上がります。
-                            自己紹介を書いていると企業側の求人詳細と比較して「経験・志向性・人柄」まで加味した深い分析が返ってきます。
+                        <p className="text-gray-500 text-xs">
+                            ---自己紹介と求人詳細をしっかり書くほど、AIの分析精度が上がります。<br />
+                            自己紹介を書いていると企業側の求人詳細と比較して「経験・志向性・人柄」まで加味した深い分析が返ってきます。---
                         </p>
                     </div>
 
