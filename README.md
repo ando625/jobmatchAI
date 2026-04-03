@@ -12,7 +12,9 @@
 
 単に求人一覧を表示するだけでなく、Next.js（フロントエンド）・Laravel（バックエント）・Python（FastAPI）の３そう構成で構築し、Gemini AIと連携することで「求職者と求人のマッチ度スコアの自動計算」と「なぜマッチしているかの理由文の自動生成」を実現しました。
 
--　動画投入
+https://github.com/user-attachments/assets/97720bbf-ecf6-4b4c-b52f-dd1e72855175
+
+https://github.com/user-attachments/assets/df0137ea-a1cd-48e8-ac5d-64a90c36a837
 
 - 機能要件・基本設計・テーブル仕様書　https://docs.google.com/spreadsheets/d/1kjwwD2PU0BoBVn64UGIXupy_y2bZ6Mk8fxENfCUK6cM/edit?usp=sharing 
 
