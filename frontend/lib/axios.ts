@@ -17,7 +17,7 @@ const apiClient = axios.create({
 
     // timeout = 「何ミリ秒待ってもレスポンスがなければエラー」
     // 10000ms = 10秒。サーバーが死んでいる時に永遠に待ち続けないようにする
-    timeout: 10000,
+    timeout: 50000,
 
     headers: {
         // Content-Type = 「送るデータはJSON形式ですよ」とサーバーに宣言
