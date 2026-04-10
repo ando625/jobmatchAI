@@ -4,8 +4,13 @@
 # pydantic==2.9.2
 # python-dotenv==1.0.1
 
-
+# Geminiと会話するための基本的な道具
 fastapi==0.115.0
 uvicorn==0.30.0
 httpx==0.27.0
 google-generativeai==0.7.0
+
+# AIに検索させたり、複雑なチェーンのように動かす道具
+google-genai          # 最新のGemini 2.0系や検索機能を使うための新しい道具
+langchain             # AIに「役割」や「手順」を覚えさせる鎖
+langchain-google-genai # LangChainの中でGeminiを使いやすくする接続パーツ

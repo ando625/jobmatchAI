@@ -5,6 +5,11 @@ from fastapi import FastAPI          # FastAPIの本体
 from pydantic import BaseModel       # リクエストの「型チェック」をする道具
 from matcher import calc_jaccard_score    # 自分で作ったJaccard計算を読み込む
 from gemini import generate_match_reason, generate_match_reason_for_company  # 自分で作ったGemini連携を読み込む
+from google import genai
+from google.genai import types
+from trend_analyzer import analyze_skill_trend
+
+
 
 
 # 1. FastAPIアプリを作る（「お店をオープンします」という宣言）
@@ -28,7 +33,15 @@ class CompanyMatchRequest(BaseModel):
     user_intro: str = ""
     score: int
     job_description: str = ""
-    
+
+
+
+# トレンド分析用の「リスクエストの形」を決める
+# laravelから「なんのスキルを調べたいか」を受け取るための箱
+class TrendRequest(BaseModel):
+    skill_name: str
+
+
 
 # 3. エンドポイントを作る
 #    「POST /match に来たら、この関数を実行してね」という意味
@@ -56,6 +69,16 @@ async def match_company(req: CompanyMatchRequest):
         req.job_description, 
     )
     return {"reason": reason}
+
+
+
+# 追加「トレンド分析窓口」
+@app.post("/analyze-trend")
+async def analyze_trend(req: TrendRequest):
+    analysis_result = analyze_skill_trend(req.skill_name)
+    
+    return {"analysis": analysis_result}
+
 
 # 7. サーバーが起動したとき「生きてるよ！」確認用のエンドポイント
 @app.get("/health")

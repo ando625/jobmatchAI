@@ -169,4 +169,18 @@ export const messageApi = {
 
     deleteMessage: (id: number) =>
         apiClient.delete(`/messages/${id}`),
+
+
+};
+
+
+// ============================================================
+// AI解析 API（aiApi）
+// ============================================================
+export const aiApi = {
+    analyzeTrend: (skillName: string) => {
+        return apiClient.post<{ analysis: string }>('/trend-analysis', {
+            skill_name: skillName
+        });
+    },
 };

@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\MatchPreviewController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\MessageController;
-
+use App\Http\Controllers\Api\TrendController;
 
 Route::prefix('auth')->group(function (){
     Route::post('/register', [AuthController::class, 'register']);
@@ -64,6 +64,9 @@ Route::middleware('auth:sanctum')->group(function (){
 
     //メッセージ削除
     Route::delete('/messages/{id}', [MessageController::class,'destroy']);
+
+    // トレンド分析
+    Route::post('/trend-analysis', [TrendController::class, 'analyze']);
 });
 
 

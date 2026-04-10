@@ -12,6 +12,7 @@ import JobDetailModal from "@/components/jobs/JobDetailModal";
 import Link from "next/link";
 import apiClient from "@/lib/axios";
 import { Pagination } from "../common/Pagination";
+import TrendAnalyzerCard from "./TrendAnalyzerCard";
 
 
 // スキルフィルターの選択肢（よく使うものを並べる）
@@ -186,6 +187,10 @@ export default function JobSeekerDashboard({ user }: Props) {
                             {s}
                         </button>
                     ))}
+                </div>
+
+                <div className="mt-6">
+                    <TrendAnalyzerCard />
                 </div>
             </div>
 
