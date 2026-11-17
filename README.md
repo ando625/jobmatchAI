@@ -174,7 +174,7 @@ Laravelのアクセス制限機能（Policy）や、通信を途中でチェッ�
 | | Tailwind CSS | スタイリング |
 | | React Hooks (useState, useEffect) | 状態管理 |
 | | Axios | API通信・認証トークン管理 |
-| バックエンド | Laravel 12 / PHP 8.4 | REST API・認証・DB操作 |
+| バックエンド | Laravel 13 / PHP 8.4 | REST API・認証・DB操作 |
 | | Laravel Sanctum | APIトークン認証 |
 | | Laravel Policy / Middleware | ロール認可・アクセス制御 |
 | AI解析 | Python 3.12 / FastAPI | AI解析マイクロサービス |
@@ -290,7 +290,7 @@ job/
 │   ├── mysql/my.cnf・data/
 │   ├── next/Dockerfile
 │   └── python/Dockerfile
-├── laravel/                ← Laravel 12（バックエンド）
+├── laravel/                ← Laravel 13（バックエンド）
 │   └── .env                ← Laravel用（DB接続・APP_KEY）
 ├── frontend/               ← Next.js 15+（フロントエンド）
 │   └── .env.local          ← Next.js用（API URL）
@@ -426,19 +426,33 @@ npm install
 - ユーザー名・パスワードは `.env` と同じ
 - DB: `laravel_db` を確認可能
 
+---
 
+## バージョンアップと脆弱性チェック
 
+### バージョンアップ（2026年11月）
 
+Laravel 12 から Laravel 13 に更新し、PHP の下限を 8.4 にしました（[公式のアップグレードガイド](https://laravel.com/docs/13.x/upgrade)に沿って実施）。
 
+| 対象 | 変更前 | 変更後 | セキュリティ修正の期限 |
+|---|---|---|---|
+| PHP | 8.4（composer.json は ^8.2） | 8.4 | 2028-12-31 |
+| Laravel | 12.55.1 | 13.42.0 | 2028-03-17 |
 
+- 期限の出典: [PHP Supported Versions](https://www.php.net/supported-versions.php) / [Laravel Release Notes](https://laravel.com/docs/13.x/releases)
+- `composer audit` で検出された脆弱性は、更新前の53件から0件になりました
 
+### 脆弱性チェックの方法
 
+PHP コンテナの中で次のコマンドを実行すると、依存パッケージに既知の脆弱性やマルウェアがないか確認できます（マルウェアの確認には新しい Composer が必要です。2.8 では確認されず、2.11 では確認されることを確かめています）。
 
+```bash
+composer audit
+```
 
+### 自動チェック
 
-
-
-
-
-
-
+| 仕組み | 内容 |
+|---|---|
+| GitHub Actions（`.github/workflows/composer-audit.yml`） | `main` への push・PR・毎週月曜に `composer audit` を実行し、問題があれば失敗にする |
+| Dependabot（`.github/dependabot.yml`） | composer と Dockerfile の更新を毎週チェックし、更新があれば PR を作る |
