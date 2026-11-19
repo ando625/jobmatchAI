@@ -174,7 +174,7 @@ Laravelのアクセス制限機能（Policy）や、通信を途中でチェッ�
 | | Tailwind CSS | スタイリング |
 | | React Hooks (useState, useEffect) | 状態管理 |
 | | Axios | API通信・認証トークン管理 |
-| バックエンド | Laravel 13 / PHP 8.4 | REST API・認証・DB操作 |
+| バックエンド | Laravel 13 / PHP 8.5 | REST API・認証・DB操作 |
 | | Laravel Sanctum | APIトークン認証 |
 | | Laravel Policy / Middleware | ロール認可・アクセス制御 |
 | AI解析 | Python 3.12 / FastAPI | AI解析マイクロサービス |
@@ -441,6 +441,17 @@ Laravel 12 から Laravel 13 に更新し、PHP の下限を 8.4 にしました
 
 - 期限の出典: [PHP Supported Versions](https://www.php.net/supported-versions.php) / [Laravel Release Notes](https://laravel.com/docs/13.x/releases)
 - `composer audit` で検出された脆弱性は、更新前の53件から0件になりました
+
+### PHP 8.5 への更新（2026年11月）
+
+PHP 8.4 のバグ修正が 2026-12-31 で終わるため、PHP 8.5 に更新しました（Docker・composer.json・CI）。
+
+| 対象 | 変更前 | 変更後 | バグ修正の期限 | セキュリティ修正の期限 |
+|---|---|---|---|---|
+| PHP | 8.4 | 8.5 | 2027-12-31 | 2029-12-31 |
+
+- 期限の出典: [PHP Supported Versions](https://www.php.net/supported-versions.php)
+- Laravel 13 は PHP 8.3〜8.5 に対応しています（[Laravel Release Notes](https://laravel.com/docs/13.x/releases)）
 
 ### 脆弱性チェックの方法
 
