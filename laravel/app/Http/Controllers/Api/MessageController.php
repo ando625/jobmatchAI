@@ -14,6 +14,15 @@ class MessageController extends Controller
     //メッセージ一覧表示
     public function index($id)
     {
+        // この応募に関係のある人（求職者or企業）しかメッセージを読めない（送信と同じチェック）
+        $application = Application::with('jobPosting.company')->findOrFail($id);
+        $userId = Auth::id();
+        $isApplicant = $application->user_id === $userId;
+        $isCompany = $application->jobPosting?->company?->user_id === $userId;
+        if (!$isApplicant && !$isCompany) {
+            return response()->json(['message' => 'このメッセージへのアクセス権限がありません'], 403);
+        }
+
         //その応募($id)に紐ずくメッセージを古い順に全部取ってくる
         $messages = Message::where('application_id', $id)
             ->with('sender:id,name,role')

@@ -274,6 +274,14 @@ class JobController extends Controller
     // ============================================================
     public function destroy(JobPosting $job)
     {
+        // 自社の求人かチェック（編集・閲覧と同じ確認）
+        $company = Auth::user()->company;
+        if (!$company || $job->company_id !== $company->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'この求人を削除する権限がありません',
+            ], 403);
+        }
 
         $job->delete();
 
@@ -340,6 +348,15 @@ class JobController extends Controller
         // Applicationテーブルから、指定されたIDの人をプロフィール付きで1人だけ連れてくる
         $applicant = Application::with(['user.profile', 'jobPosting'])
             ->findOrFail($id);
+
+        // 自社の求人への応募かチェック
+        $company = Auth::user()->company;
+        if (!$company || $applicant->jobPosting?->company_id !== $company->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'この応募者を閲覧する権限がありません',
+            ], 403);
+        }
 
         return response()->json([
             'success' => true,

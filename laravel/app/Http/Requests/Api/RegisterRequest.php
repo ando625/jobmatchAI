@@ -30,7 +30,8 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'role' => ['required', 'string', 'in:jobseeker,company,admin'],
+            // 管理者は登録画面から作れないようにする（管理者は UserSeeder で作る）
+            'role' => ['required', 'string', 'in:jobseeker,company'],
         ];
     }
 
@@ -43,7 +44,7 @@ class RegisterRequest extends FormRequest
             'password.required' => 'パスワードは必須です',
             'password.confirmed' => 'パスワードが一致しません',
             'role.required'     => '役割は必須です',
-            'role.in'           => '役割は求職者・企業・管理者のいずれかを指定してください',
+            'role.in'           => '役割は求職者・企業のいずれかを指定してください',
         ];
     }
 }

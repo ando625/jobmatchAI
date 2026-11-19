@@ -86,14 +86,20 @@ class MatchPreviewController extends Controller
     // ============================================
     public function analyzeForCompany(Application $application)
     {
+        // 自社の求人への応募かチェック
+        $company = auth()->user()->company;
+        if (!$company || $application->jobPosting?->company_id !== $company->id) {
+            return response()->json(['message' => '権限がありません'], 403);
+        }
+
         // 応募者のスキルと自己紹介を取得
         $userSkills = $application->user->profile?->skills ?? [];
         $userIntro  = $application->user->profile?->bio    ?? "";
 
         // 求人の必須スキルと仕事内容を取得
-        // $job ではなく $application->job_posting を使う！
-        $jobSkills      = $application->job_posting?->required_skills ?? [];
-        $jobDescription = $application->job_posting?->description     ?? "";  // ← 修正！
+        // リレーション名は jobPosting（job_posting と書くと null になり、空のまま送られてしまう）
+        $jobSkills      = $application->jobPosting?->required_skills ?? [];
+        $jobDescription = $application->jobPosting?->description     ?? "";
 
         // 応募時のマッチスコアを取得
         $score = $application->match_score ?? 0;
