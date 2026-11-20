@@ -2,7 +2,7 @@
 # GeminiAIに「なぜマッチしているか」の理由文を作ってもらうファイル
 
 import os                            # 環境変数を読み込むための道具
-import google.generativeai as genai  # Gemini APIを使うための道具
+from gemini_client import generate_text  # Gemini の Interactions API を呼ぶ共通の窓口
 
 
 # 「スキル情報をAIに渡して、マッチ理由を文章で作らせる関数」
@@ -20,11 +20,7 @@ def generate_match_reason(
     if not api_key:
         return "AIによる分析を利用できません。"
 
-    # 3. Geminiの設定をする
-    genai.configure(api_key=api_key)
-
-    # 4. 使うモデルを指定する
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    # 3. 使うモデルは gemini_client.py で決めている（GEMINI_MODEL で変えられる）
 
     # ── 自己紹介の有無でプロンプトを切り替える ──
     if not user_intro or user_intro.strip() == "":
@@ -71,11 +67,8 @@ def generate_match_reason(
 6. 「この求人では〜」という形式で書き始めてください。
 {additional_instruction}
 """
-    # 6. Geminiにプロンプトを送って、レスポンスを受け取る
-    response = model.generate_content(prompt)
-
-    # 7. レスポンスからテキストだけ取り出して返す
-    return response.text.strip()
+    # 6. Geminiにプロンプトを送って、AIが書いた文を受け取って返す
+    return generate_text(prompt)
 
 
 # ============================================
@@ -91,9 +84,6 @@ def generate_match_reason_for_company(
     api_key = os.getenv("GEMINI_API_KEY", "")
     if not api_key:
         return "AIによる分析を利用できません。"
-
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash")
 
     # 求人詳細の有無でプロンプトを切り替える
     if not job_description or job_description.strip() == "":
@@ -120,5 +110,4 @@ def generate_match_reason_for_company(
 4. メリット・懸念点をそれぞれ含め、300文字〜500文字程度の自然な文章で作成してください。
 5. 「この応募者は〜」という形式で書き始めてください。
 """
-    response = model.generate_content(prompt)
-    return response.text.strip()
+    return generate_text(prompt)
