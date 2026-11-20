@@ -5,8 +5,6 @@ from fastapi import FastAPI          # FastAPIの本体
 from pydantic import BaseModel       # リクエストの「型チェック」をする道具
 from matcher import calc_jaccard_score    # 自分で作ったJaccard計算を読み込む
 from gemini import generate_match_reason, generate_match_reason_for_company  # 自分で作ったGemini連携を読み込む
-from google import genai
-from google.genai import types
 from trend_analyzer import analyze_skill_trend
 
 
